@@ -1,0 +1,104 @@
+#------------------------------------------------------------------------------
+# TFE Prerequisites Module Variables
+#------------------------------------------------------------------------------
+# --- Common --- #
+public_key                 = "<your-ssh-public-key>"
+region               = "eu-north-1"
+friendly_name_prefix = "patrick" # typically set to either environment name (e.g. 'sandbox', 'prod'), team name, or project name
+common_tags = {
+  App   = "patrick"
+  Env   = "test"
+  Owner = "PatrickMunne"
+}
+
+# --- Networking --- #
+create_vpc              = true
+vpc_cidr                = "10.0.0.0/16"
+lb_subnet_cidrs_public  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+lb_subnet_cidrs_private = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+compute_subnet_cidrs    = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
+db_subnet_cidrs         = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
+redis_subnet_cidrs      = ["10.0.13.0/24", "10.0.14.0/24", "10.0.15.0/24"]
+ngw_subnet_cidrs        = ["10.0.253.0/24", "10.0.254.0/24", "10.0.255.0/24"]
+
+# --- Bastion --- #
+create_bastion                 = true
+bastion_instance_type          = "t3.micro"
+bastion_ec2_keypair_name       = "patrick"
+bastion_cidr_allow_ingress_ssh = ["192.168.1.0/24"] # Your client/workstation IP address
+
+# --- TLS certificates --- #
+create_tls_certs                  = true
+tls_cert_fqdn                     = "tfe.patrick-munne.sbx.hashidemos.io"
+tls_cert_email_address            = "patrick.munne@hashicorp.com"
+tls_cert_route53_public_zone_name = "patrick-munne.sbx.hashidemos.io"
+create_local_cert_files           = true
+
+# --- Secrets Manager --- #
+tfe_license_secret_value             = "<your-tfe-license-value>"
+tfe_encryption_password_secret_value = "iamafaketfeencryptionpassword"
+tfe_database_password_secret_value   = "iamafaketfedatabasepassword"
+tfe_redis_password_secret_value      = "iamafaketferedispassword"
+
+# --- CloudWatch (optional) --- #
+create_cloudwatch_log_group = false
+cloudwatch_log_group_name   = "tfe-log-fwd"
+
+# --- KMS (optional) --- #
+create_kms_cmk = false
+kms_cmk_alias  = "alias/tfe-cmk"
+
+#------------------------------------------------------------------------------
+# TFE Module Variables
+#------------------------------------------------------------------------------
+# --- Bootstrap --- #
+tfe_image_tag = "2.0.3" # TFE version, refer to https://developer.hashicorp.com/terraform/enterprise/releases
+
+# --- TFE configuration settings --- #
+tfe_fqdn               = "tfe.patrick-munne.sbx.hashidemos.io"
+tfe_operational_mode   = "active-active"
+tfe_metrics_enable     = false
+tfe_metrics_http_port  = 9090
+tfe_metrics_https_port = 9091
+tfe_iact_subnets  = "0.0.0.0/0"
+
+# --- Networking --- #
+lb_is_internal                       = false
+cidr_allow_ingress_tfe_443           = ["0.0.0.0/0"] # CIDR range(s) of TFE users/clients, VCS
+cidr_allow_ingress_ec2_ssh           = ["0.0.0.0/0"] # CIDR range(s) of workstations managing TFE servers, remove to block SSH (port 22) access
+# cidr_allow_ingress_tfe_metrics_http  = ["<10.1.0.20/32>"] # CIDR range(s) of monitoring tool's polling source, remove if `tfe_metrics_enable` is `false`
+# cidr_allow_ingress_tfe_metrics_https = ["<10.1.0.20/32>"] # CIDR range(s) of monitoring tool's polling source, remove if `tfe_metrics_enable` is `false`
+
+# --- DNS (optional) --- #
+create_route53_tfe_dns_record      = true
+route53_tfe_hosted_zone_name       = "patrick-munne.sbx.hashidemos.io"
+route53_tfe_hosted_zone_is_private = false # must be `true` when `lb_is_internal` is `true`, and `false` when `lb_is_internal` is `false`
+
+# --- Compute --- #
+container_runtime  = "docker"     # either `docker` or `podman`
+ec2_os_distro      = "ubuntu"     # either `ubuntu`, `rhel` (RHEL9), `rhel10` (RHEL10), `al2023`, or `centos`
+ec2_allow_ssm      = true         # set to `true` if you want to use SSM Session Manager for shell access
+ec2_instance_size  = "m7i.xlarge"
+asg_instance_count = 1            # optionally bump up to a max of 3 after successful installation
+
+# --- Database --- #
+tfe_database_name           = "tfe"
+tfe_database_user           = "tfe"
+tfe_database_parameters     = "sslmode=require"
+rds_aurora_engine_version   = "16.4"
+rds_parameter_group_family  = "aurora-postgresql16"
+rds_aurora_instance_class   = "db.r6i.xlarge"
+rds_aurora_replica_count    = 1     # set to 0 to deploy no "reader" instances
+rds_skip_final_snapshot     = false
+
+# --- Redis --- #
+redis_engine_version             = "7.1"
+redis_parameter_group_name       = "default.redis7"
+redis_node_type                  = "cache.m5.large"
+redis_multi_az_enabled           = true # requires more than one subnet specified in `redis_subnet_ids` when `true`
+redis_automatic_failover_enabled = true # requires more than one subnet specified in `redis_subnet_ids` when `true`
+
+# --- Log forwarding (optional) --- #
+tfe_log_forwarding_enabled = false                      # set to `false` if you have your own
+log_fwd_destination_type   = "s3"                       # either `s3` or `cloudwatch`
+s3_log_fwd_bucket_name     = "tfe-logging-bucket-name"  # set to `null` or remove when `log_fwd_destination_type` is `cloudwatch`
