@@ -37,7 +37,9 @@ module "tfe_prereqs" {
   # --- Bastion --- #
   create_bastion                 = var.create_bastion
   bastion_instance_type          = var.bastion_instance_type
-  bastion_ec2_keypair_name       = var.bastion_ec2_keypair_name
+  bastion_ec2_keypair_name       = aws_key_pair.deployer.key_name
+  bastion_ami_id                  = var.bastion_ami_id
+  bastion_instance_profile_name   = var.bastion_instance_profile_name
   bastion_cidr_allow_ingress_ssh = var.bastion_cidr_allow_ingress_ssh
 
   # --- TLS certificates --- #
