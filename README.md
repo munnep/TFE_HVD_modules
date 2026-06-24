@@ -1,99 +1,110 @@
 # Terraform Enterprise HVD Deployment
 
-This repository uses the official HashiCorp Validated Design (HVD) modules to deploy Terraform Enterprise on AWS.
+This repository uses the official HashiCorp Validated Design (HVD) modules to deploy Terraform Enterprise across multiple cloud providers.
 
 ## Overview
 
-This deployment uses two main modules:
+This repository contains Terraform configurations for deploying Terraform Enterprise (TFE) on:
+- **AWS** - Active-Active mode deployment with full prerequisites automation
+- **GCP** - Google Cloud Platform deployment with modular approach
+- **Azure** - Azure deployment with comprehensive prerequisites (in development)
+
+Each cloud provider directory contains the necessary modules and configurations to deploy TFE using HashiCorp's validated designs.
+
+## Repository Structure
+
+```
+.
+├── AWS/                    # AWS deployment configurations
+├── gcp/                    # GCP deployment configurations
+│   ├── terraform-acme-tls-google/           # TLS certificate generation
+│   ├── terraform-google-prereqs/            # GCP prerequisites
+│   └── terraform-google-terraform-enterprise-hvd/  # TFE deployment
+└── Azure/                  # Azure deployment configurations
+    └── terraform-azurerm-prereqs/           # Azure prerequisites
+```
+
+## Cloud Provider Deployments
+
+### AWS
+The AWS deployment uses two main modules:
 - **terraform-aws-tfe-prereqs**: Sets up prerequisites (VPC, networking, secrets, TLS certificates, bastion host)
 - **terraform-aws-terraform-enterprise-hvd**: Deploys Terraform Enterprise in Active-Active mode
+
+**See [AWS/README.md](AWS/README.md) for detailed AWS deployment instructions.**
+
+### GCP
+The GCP deployment uses a modular approach with three separate Terraform configurations:
+- **terraform-acme-tls-google**: Generates TLS certificates using ACME/Let's Encrypt
+- **terraform-google-prereqs**: Sets up GCP prerequisites (VPC, networking, secrets, Cloud SQL, Redis)
+- **terraform-google-terraform-enterprise-hvd**: Deploys Terraform Enterprise
+
+**See [gcp/README.md](gcp/README.md) for detailed GCP deployment instructions.**
+
+### Azure
+The Azure deployment includes comprehensive prerequisites for TFE and other HashiCorp products.
+- **terraform-azurerm-prereqs**: Sets up Azure prerequisites (VNet, networking, Key Vault, storage, etc.)
+
+**See [Azure/terraform-azurerm-prereqs/README.md](Azure/terraform-azurerm-prereqs/README.md) for detailed Azure deployment instructions.**
 
 ## Prerequisites
 
 ### Required Tools
 - [Terraform](https://www.terraform.io/downloads) >= 1.9
-- AWS CLI configured with appropriate credentials
+- Cloud provider CLI tools:
+  - AWS CLI (for AWS deployments)
+  - gcloud CLI (for GCP deployments)
+  - Azure CLI (for Azure deployments)
 - Valid Terraform Enterprise license
 
-### AWS Requirements
+### Cloud Provider Requirements
+
+#### AWS
 - AWS Account with appropriate permissions
 - AWS credentials configured (via `aws configure` or environment variables)
 - Route53 hosted zone (if using DNS automation)
-- Sufficient AWS service quotas for:
-  - VPC and networking resources
-  - EC2 instances
-  - RDS Aurora PostgreSQL
-  - ElastiCache Redis
-  - S3 buckets
-  - Secrets Manager
+- Sufficient AWS service quotas
+
+#### GCP
+- GCP Project with appropriate permissions
+- Service account with necessary roles
+- GCP APIs enabled (compute, networking, SQL, Redis, etc.)
+- Cloud DNS managed zone (if using DNS automation)
+
+#### Azure
+- Azure subscription with appropriate permissions
+- Azure credentials configured
+- Azure DNS zone (if using DNS automation)
 
 ## Quick Start
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd TFE_HVD_modules/AWS/use_as_module
-```
+Choose your cloud provider and follow the specific README:
 
-### 2. Configure Variables
-Copy the example file and customize it with your specific values:
+1. **AWS**: Navigate to `AWS/` directory and follow [AWS/README.md](AWS/README.md)
+2. **GCP**: Navigate to `gcp/` directory and follow [gcp/README.md](gcp/README.md)
+3. **Azure**: Navigate to `Azure/terraform-azurerm-prereqs/` directory and follow the README
 
-```bash
-# Copy the example file
-cp terraform.tfvars.example terraform.tfvars
+## Common Features
 
-# Edit terraform.tfvars with your settings
-vi terraform.tfvars
-```
+All deployments support:
+- ✅ High Availability (Active-Active mode)
+- ✅ Automated TLS certificate generation
+- ✅ Managed PostgreSQL database
+- ✅ Redis cache for session management
+- ✅ Object storage for application data
+- ✅ Secrets management (AWS Secrets Manager, GCP Secret Manager, Azure Key Vault)
+- ✅ Network isolation and security groups
+- ✅ Optional bastion host for secure access
+- ✅ DNS automation (optional)
+- ✅ Log forwarding capabilities
 
-**Important**: Update the following values in `terraform.tfvars`:
-- `bastion_ec2_keypair_name`: Your SSH key pair name (must exist in AWS)
-- `tfe_license_secret_value`: **Your actual TFE license string** (replace the placeholder)
-- `region`: AWS region for deployment
-- `friendly_name_prefix`: Unique prefix for resource naming
-- `tfe_fqdn`: Fully qualified domain name for TFE
-- `tfe_cert_email_address`: Your email for TLS certificate
-- Network CIDR ranges (adjust as needed)
-- Database and Redis configurations
+## Support
 
-> **Note**: The `terraform.tfvars` file is gitignored to prevent committing sensitive data. Always use `terraform.tfvars.example` as a template.
+For issues or questions:
+- Review the cloud-specific README files
+- Check the official HashiCorp Validated Design documentation
+- Consult the Terraform Enterprise documentation
 
-### 3. Initialize Terraform
-```bash
-terraform init
-```
+## License
 
-### 4. Plan the Deployment
-```bash
-terraform plan
-```
-
-### 5. Deploy
-```bash
-terraform apply
-```
-
-### 6. Access TFE
-After successful deployment, retrieve the TFE URL:
-```bash
-terraform output tfe_url
-```
-
-### 7. Create Initial Admin User
-To create the first admin user, you can use the script to autogenerate it
-
-```bash
-./scripts/configure_tfe.sh <your-hostname> patrick.munne@ibm.com admin Password#1"
-```
-
-
-## Outputs
-
-After deployment, the following outputs are available:
-
-- `tfe_url`: Main TFE application URL
-- `tfe_create_initial_admin_user_url`: URL to create initial admin user
-- `lb_dns_name`: Load balancer DNS name
-- `bastion_public_ip`: Bastion host IP (if enabled)
-- `tfe_database_host`: PostgreSQL endpoint
-- `s3_bucket_name`: TFE S3 bucket name
+This repository uses HashiCorp's official HVD modules. Ensure you have a valid Terraform Enterprise license before deployment.

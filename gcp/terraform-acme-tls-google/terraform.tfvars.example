@@ -1,0 +1,7 @@
+region                      = "europe-west4"
+gcp_project_id              = "hc-1780abbb2a824e019e2fea37d69"
+cloud_dns_managed_zone_name = "doormat-accountid" # If you created a new project it will usually be either `doormat-useremail` or `doormat-accountid`
+tls_cert_fqdn               = "tfe.hc-1780abbb2a824e019e2fea37d69.gcp.sbx.hashicorpdemo.com" # Add tfe. in front of DNS name - If you created a new project it should be like tfe.username-123456.gcp.sbx.hashicorpdemo.com
+tls_cert_email_address      = "patrick.munne@ibm.com"
+create_cert_files           = true
+add_cert_filename_prefix    = true

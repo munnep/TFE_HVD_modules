@@ -38,8 +38,6 @@ module "tfe_prereqs" {
   create_bastion                 = var.create_bastion
   bastion_instance_type          = var.bastion_instance_type
   bastion_ec2_keypair_name       = aws_key_pair.deployer.key_name
-  bastion_ami_id                  = var.bastion_ami_id
-  bastion_instance_profile_name   = var.bastion_instance_profile_name
   bastion_cidr_allow_ingress_ssh = var.bastion_cidr_allow_ingress_ssh
 
   # --- TLS certificates --- #
@@ -139,5 +137,7 @@ module "tfe" {
   log_fwd_destination_type   = var.log_fwd_destination_type
   s3_log_fwd_bucket_name     = var.s3_log_fwd_bucket_name
   cloudwatch_log_group_name  = module.tfe_prereqs.cloudwatch_log_group_name
+
+  depends_on = [module.tfe_prereqs]
 }
 

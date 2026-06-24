@@ -1,0 +1,48 @@
+# --- Common --- #
+project_id           = "hc-1780abbb2a824e019e2fea37d69"
+region               = "europe-west4"
+friendly_name_prefix = "cloud-team"
+common_labels = {
+  "app"         = "terraform-enterprise"
+  "owner"       = "patrick"
+  "environment" = "test"
+}
+
+# --- Bootstrap --- #
+# Note: All bootstrap secrets are retrieved from remote state (terraform-google-prereqs)
+
+# --- TFE config settings --- #
+tfe_fqdn                   = "tfe.hc-1780abbb2a824e019e2fea37d69.gcp.sbx.hashicorpdemo.com"
+tfe_image_tag              = "2.0.3"
+tfe_admin_https_port       = 9443
+tfe_admin_console_disabled = true
+
+# --- Networking --- #
+# Note: vpc_network_name and vm_subnet_name are retrieved from remote state (terraform-google-prereqs)
+lb_is_internal                       = false
+# lb_subnet_name                       = "cloud-team-prereq-subnet" # can be the same as VM subnet if desired
+cidr_allow_ingress_tfe_443           = ["0.0.0.0/0"] # CIDR ranges of TFE users/clients, VCS, and other tooling that will access TFE
+cidr_allow_ingress_tfe_admin_console = ["10.0.0.0/0"] # required when tfe_admin_console_disabled = false
+allow_ingress_vm_ssh_from_iap        = true
+tfe_iact_subnets                     = "0.0.0.0/0"
+
+# --- DNS (optional) --- #
+create_tfe_cloud_dns_record = true
+cloud_dns_managed_zone_name = "doormat-accountid"
+
+# --- Compute --- #
+mig_instance_count    = 1
+gce_image_name        = "ubuntu-pro-2404-noble-amd64-v20241004"
+gce_image_project     = "ubuntu-os-pro-cloud"
+container_runtime     = "docker"
+postgres_machine_type = "db-perf-optimized-N-4" #Custom type no longer supported for PostgreSQL v16+
+
+# --- Database --- #
+# Note: tfe_database_password_secret_id is retrieved from remote state (terraform-google-prereqs)
+
+# --- KMS customer managed encryption keys (CMEK) --- #
+# Note: All KMS keys are retrieved from remote state (terraform-google-prereqs)
+
+# --- Log forwarding (optional) --- #
+tfe_log_forwarding_enabled = false
+log_fwd_destination_type   = "stackdriver"

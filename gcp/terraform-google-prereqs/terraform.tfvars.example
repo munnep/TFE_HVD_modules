@@ -1,0 +1,23 @@
+
+# --- Common --- #
+gcp_project_id = "hc-1780abbb2a824e019e2fea37d69"
+region         = "europe-west4"
+
+friendly_name_prefix = "cloud-team"
+common_labels = {
+  "app"         = "terraform-enterprise"
+  "owner"       = "patrick"
+  "environment" = "test"
+}
+
+# --- Networking --- #
+create_vpc                        = true
+cidr_allow_ingress_https          = ["0.0.0.0/0"]
+cidr_allow_ingress_bastion        = ["0.0.0.0/0"]
+create_vpc_private_service_access = true
+
+# --- Secret Manager --- #
+tfe_license_secret             = "<license-key>"
+tfe_encryption_password_secret = "Encrypti0nP@ssw0rd123!"
+tfe_database_password_secret   = "P0stGr3S123!"
+
